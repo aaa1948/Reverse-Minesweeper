@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RE:MINES</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    min-height:100vh;
+    background:#18181c;
+    color:#eee;
+    font-family:monospace;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+}
+
+#game{
+    width:min(760px,100%);
+    min-height:760px;
+    padding:24px 12px;
+    text-align:center;
+}
+
+h1{
+    margin:10px 0 4px;
+    font-size:38px;
+    letter-spacing:3px;
+}
+
+.subtitle{
+    color:#999;
+    margin-bottom:35px;
+}
+
+.hidden{
+    display:none!important;
+}
+
+/* =========================
+   MAIN MENU
+   ========================= */
+
+#menuText{
+    color:#bbb;
+    margin:25px 0;
+    letter-spacing:2px;
+}
+
+.modeArea{
+    display:flex;
+    justify-content:center;
+    gap:28px;
+    flex-wrap:wrap;
+}
+
+.modeButton{
+    width:150px;
+    height:145px;
+    border:2px solid #777;
+    background:#232329;
+    color:white;
+    cursor:pointer;
+    font-family:monospace;
+}
+
+.modeButton:hover{
+    border-color:white;
+    background:#303038;
+}
+
+.modeNumber{
+    display:block;
+    font-size:58px;
+    margin-bottom:8px;
+}
+
+.modeDescription{
+    color:#aaa;
+    font-size:11px;
+    line-height:1.5;
+}
+
+/* =========================
+   GAME INFO
+   ========================= */
+
+#modeTitle{
+    color:#aaa;
+    margin-bottom:7px;
+}
+
+#topInfo{
+    height:40px;
+    font-size:25px;
+    margin-bottom:10px;
+}
+
+#memoryTimer{
+    color:#ffd84a;
+}
+
+/* =========================
+   BOARD
+   ========================= */
+
+#board{
+    display:grid;
+    margin:0 auto;
+    border:1px solid #777;
+    width:min(500px,94vw);
+    aspect-ratio:1;
+}
+
+.cell{
+    position:relative;
+    background:#232329;
+    border:1px solid #666;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    cursor:pointer;
+    user-select:none;
+    min-width:0;
+    min-height:0;
+}
+
+.cell:hover{
+    background:#303038;
+}
+
+.cell.selected{
+    background:#484855;
+    outline:3px solid #ffd84a;
+    outline-offset:-3px;
+}
+
+.cell.mineCell{
+    cursor:default;
+}
+
+.mine{
+    width:30%;
+    aspect-ratio:1;
+    background:#e64b4b;
+    border-radius:50%;
+    position:relative;
+}
+
+.mine:before,
+.mine:after{
+    content:"";
+    position:absolute;
+    background:#e64b4b;
+    width:180%;
+    height:2px;
+    left:-40%;
+    top:50%;
+}
+
+.mine:before{
+    transform:rotate(45deg);
+}
+
+.mine:after{
+    transform:rotate(-45deg);
+}
+
+.mineLineV{
+    position:absolute;
+    width:2px;
+    height:180%;
+    background:#e64b4b;
+    top:-40%;
+    left:50%;
+}
+
+.mineLineH{
+    position:absolute;
+    width:180%;
+    height:2px;
+    background:#e64b4b;
+    left:-40%;
+    top:50%;
+}
+
+.number{
+    font-size:clamp(17px,4vw,34px);
+    font-weight:bold;
+}
+
+.resultGood{
+    background:#234b30!important;
+}
+
+.resultBad{
+    background:#5a2828!important;
+}
+
+/* =========================
+   KEYPAD
+   ========================= */
+
+#keypad{
+    margin:20px auto 8px;
+    display:grid;
+    grid-template-columns:repeat(9,1fr);
+    gap:5px;
+    max-width:500px;
+}
+
+.key{
+    border:1px solid #666;
+    background:#2c2c33;
+    color:white;
+    min-height:42px;
+    cursor:pointer;
+    font-size:18px;
+    font-family:monospace;
+}
+
+.key:hover{
+    background:#44444e;
+}
+
+#deleteButton{
+    margin-top:5px;
+    border:1px solid #666;
+    background:#2c2c33;
+    color:#ddd;
+    height:35px;
+    padding:0 20px;
+    cursor:pointer;
+}
+
+/* =========================
+   CONTROLS
+   ========================= */
+
+#controls{
+    margin-top:20px;
+    color:#bbb;
+    display:flex;
+    justify-content:center;
+    gap:35px;
+    flex-wrap:wrap;
+}
+
+.controlButton{
+    border:0;
+    background:none;
+    color:#bbb;
+    font-family:monospace;
+    cursor:pointer;
+    font-size:14px;
+}
+
+.controlButton:hover{
+    color:white;
+}
+
+#message{
+    min-height:25px;
+    color:#e5a94a;
+    margin-top:12px;
+}
+
+/* =========================
+   RESULT
+   ========================= */
+
+#resultInfo{
+    margin-top:18px;
+    font-size:20px;
+}
+
+.goodText{
+    color:#5fd17a;
+}
+
+.badText{
+    color:#e85c5c;
+}
+
+/* =========================
+   MOBILE
+   ========================= */
+
+@media(max-width:600px){
+
+    #game{
+        min-height:100vh;
+    }
+
+    .modeArea{
+        gap:10px;
+    }
+
+    .modeButton{
+        width:100px;
+        height:120px;
+    }
+
+    .modeNumber{
+        font-size:46px;
+    }
+
+    #controls{
+        gap:15px;
+    }
+
+    #keypad{
+        gap:2px;
+    }
+
+    .key{
+        padding:0;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="game">
+
+    <h1>RE:MINES</h1>
+
+    <!-- =====================
+         MAIN MENU
+         ===================== -->
+
+    <section id="menu">
+
+        <div class="subtitle">
+            REVERSE MINESWEEPER
+        </div>
+
+        <div id="menuText">
+            NUMBER BUTTON CLICK
+        </div>
+
+        <div class="modeArea">
+
+            <button class="modeButton" onclick="startGame(1)">
+                <span class="modeNumber">1</span>
+                <span class="modeDescription">
+                    5 × 5<br>
+                    NORMAL<br>
+                    5 MINES
+                </span>
+            </button>
+
+            <button class="modeButton" onclick="startGame(2)">
+                <span class="modeNumber">2</span>
+                <span class="modeDescription">
+                    5 × 5<br>
+                    MEMORY<br>
+                    3 SEC
+                </span>
+            </button>
+
+            <button class="modeButton" onclick="startGame(3)">
+                <span class="modeNumber">3</span>
+                <span class="modeDescription">
+                    10 × 10<br>
+                    NORMAL<br>
+                    15 MINES
+                </span>
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================
+         PLAY
+         ===================== -->
+
+    <section id="play" class="hidden">
+
+        <div id="modeTitle"></div>
+
+        <div id="topInfo">
+            <span id="memoryTimer"></span>
+        </div>
+
+        <div id="board"></div>
+
+        <div id="keypad"></div>
+
+        <button id="deleteButton" onclick="deleteNumber()">
+            BACKSPACE
+        </button>
+
+        <div id="controls">
+
+            <button class="controlButton" onclick="resetGame()">
+                R = RESET
+            </button>
+
+            <button class="controlButton" onclick="goMain()">
+                M = MAIN
+            </button>
+
+            <button class="controlButton" onclick="submitGame()">
+                ENTER = OK
+            </button>
+
+        </div>
+
+        <div id="message"></div>
+
+        <div id="resultInfo"></div>
+
+    </section>
+
+</div>
+
+
+<script>
+const menu = document.getElementById("menu");
+const play = document.getElementById("play");
+const boardElement = document.getElementById("board");
+const keypad = document.getElementById("keypad");
+const modeTitle = document.getElementById("modeTitle");
+const memoryTimer = document.getElementById("memoryTimer");
+const message = document.getElementById("message");
+const resultInfo = document.getElementById("resultInfo");
+
+let mode = 1;
+
+let width = 5;
+let height = 5;
+let mineCount = 5;
+
+let mines = [];
+let answers = [];
+let player = [];
+
+let selected = -1;
+
+let gameStartTime = 0;
+let finishedTime = 0;
+
+let playing = false;
+let resultMode = false;
+
+let minesVisible = true;
+
+let memoryInterval = null;
+
+
+/* =============================
+   START GAME
+   ============================= */
+
+function startGame(selectedMode){
+
+    mode = selectedMode;
+
+    if(mode === 3){
+
+        width = 10;
+        height = 10;
+        mineCount = 15;
+
+    }else{
+
+        width = 5;
+        height = 5;
+        mineCount = 5;
+    }
+
+    menu.classList.add("hidden");
+    play.classList.remove("hidden");
+
+    selected = -1;
+
+    resultMode = false;
+    playing = true;
+
+    minesVisible = true;
+
+    message.textContent = "";
+    resultInfo.textContent = "";
+
+    createBoardData();
+
+    gameStartTime = performance.now();
+
+    if(mode === 1){
+
+        modeTitle.textContent =
+            "1 / 5×5 NORMAL";
+
+        memoryTimer.textContent = "";
+
+    }
+
+    if(mode === 2){
+
+        modeTitle.textContent =
+            "2 / 5×5 MEMORY";
+
+        startMemoryMode();
+    }
+
+    if(mode === 3){
+
+        modeTitle.textContent =
+            "3 / 10×10 NORMAL";
+
+        memoryTimer.textContent = "";
+    }
+
+    createKeypad();
+
+    renderBoard();
+}
+
+
+/* =============================
+   CREATE DATA
+   ============================= */
+
+function createBoardData(){
+
+    const total =
+        width * height;
+
+    mines =
+        new Array(total).fill(false);
+
+    player =
+        new Array(total).fill(-1);
+
+    answers =
+        new Array(total).fill(-1);
+
+
+    let placed = 0;
+
+    while(placed < mineCount){
+
+        const i =
+            Math.floor(
+                Math.random() * total
+            );
+
+        if(!mines[i]){
+
+            mines[i] = true;
+
+            placed++;
+        }
+    }
+
+
+    for(
+        let y = 0;
+        y < height;
+        y++
+    ){
+
+        for(
+            let x = 0;
+            x < width;
+            x++
+        ){
+
+            const i =
+                index(x,y);
+
+            if(!mines[i]){
+
+                answers[i] =
+                    countNearby(
+                        x,
+                        y
+                    );
+            }
+        }
+    }
+}
+
+
+/* =============================
+   INDEX
+   ============================= */
+
+function index(x,y){
+
+    return y * width + x;
+}
+
+
+/* =============================
+   COUNT MINES
+   ============================= */
+
+function countNearby(x,y){
+
+    let count = 0;
+
+    for(
+        let yy = -1;
+        yy <= 1;
+        yy++
+    ){
+
+        for(
+            let xx = -1;
+            xx <= 1;
+            xx++
+        ){
+
+            if(
+                xx === 0 &&
+                yy === 0
+            ){
+                continue;
+            }
+
+
+            const nx = x + xx;
+            const ny = y + yy;
+
+
+            if(
+                nx >= 0 &&
+                nx < width &&
+                ny >= 0 &&
+                ny < height
+            ){
+
+                if(
+                    mines[
+                        index(nx,ny)
+                    ]
+                ){
+
+                    count++;
+                }
+            }
+        }
+    }
+
+    return count;
+}
+
+
+/* =============================
+   MEMORY MODE
+   ============================= */
+
+function startMemoryMode(){
+
+    minesVisible = true;
+
+    let remaining = 3;
+
+    memoryTimer.textContent =
+        "MEMORIZE 3";
+
+
+    clearInterval(
+        memoryInterval
+    );
+
+
+    memoryInterval =
+        setInterval(
+            ()=>{
+
+                remaining--;
+
+                if(remaining > 0){
+
+                    memoryTimer.textContent =
+                        "MEMORIZE " +
+                        remaining;
+
+                }else{
+
+                    clearInterval(
+                        memoryInterval
+                    );
+
+                    memoryTimer.textContent =
+                        "";
+
+                    minesVisible = false;
+
+                    selected = -1;
+
+                    renderBoard();
+                }
+
+            },
+            1000
+        );
+}
+
+
+/* =============================
+   RENDER BOARD
+   ============================= */
+
+function renderBoard(){
+
+    boardElement.innerHTML = "";
+
+    boardElement.style.gridTemplateColumns =
+        `repeat(${width},1fr)`;
+
+
+    for(
+        let y = 0;
+        y < height;
+        y++
+    ){
+
+        for(
+            let x = 0;
+            x < width;
+            x++
+        ){
+
+            const i =
+                index(x,y);
+
+
+            const cell =
+                document.createElement("div");
+
+
+            cell.className =
+                "cell";
+
+
+            if(
+                selected === i &&
+                !resultMode
+            ){
+
+                cell.classList.add(
+                    "selected"
+                );
+            }
+
+
+            if(resultMode){
+
+                if(mines[i]){
+
+                    if(player[i] !== -1){
+
+                        cell.classList.add(
+                            "resultBad"
+                        );
+                    }
+
+                }else{
+
+                    if(
+                        player[i] ===
+                        answers[i]
+                    ){
+
+                        cell.classList.add(
+                            "resultGood"
+                        );
+
+                    }else{
+
+                        cell.classList.add(
+                            "resultBad"
+                        );
+                    }
+                }
+            }
+
+
+            if(
+                minesVisible &&
+                mines[i]
+            ){
+
+                const mine =
+                    document.createElement("div");
+
+                mine.className =
+                    "mine";
+
+
+                const v =
+                    document.createElement("div");
+
+                v.className =
+                    "mineLineV";
+
+
+                const h =
+                    document.createElement("div");
+
+                h.className =
+                    "mineLineH";
+
+
+                mine.appendChild(v);
+                mine.appendChild(h);
+
+                cell.appendChild(mine);
+
+                cell.classList.add(
+                    "mineCell"
+                );
+
+            }else if(
+                player[i] !== -1
+            ){
+
+                const number =
+                    document.createElement("span");
+
+                number.className =
+                    "number";
+
+                number.textContent =
+                    player[i];
+
+                cell.appendChild(
+                    number
+                );
+            }
+
+
+            if(!resultMode){
+
+                cell.onclick =
+                    ()=>selectCell(i);
+            }
+
+
+            boardElement.appendChild(
+                cell
+            );
+        }
+    }
+}
+
+
+/* =============================
+   SELECT CELL
+   ============================= */
+
+function selectCell(i){
+
+    if(!playing)
+        return;
+
+
+    if(
+        mode === 2 &&
+        minesVisible
+    ){
+        return;
+    }
+
+
+    /*
+       NORMAL:
+       mine cells cannot be selected.
+
+       MEMORY:
+       hidden mines must still be selectable,
+       otherwise clicking would reveal their position.
+    */
+
+    if(
+        mode !== 2 &&
+        mines[i]
+    ){
+        return;
+    }
+
+
+    selected = i;
+
+    renderBoard();
+}
+
+
+/* =============================
+   KEYPAD
+   ============================= */
+
+function createKeypad(){
+
+    keypad.innerHTML = "";
+
+    for(
+        let n = 0;
+        n <= 8;
+        n++
+    ){
+
+        const button =
+            document.createElement(
+                "button"
+            );
+
+
+        button.className =
+            "key";
+
+        button.textContent =
+            n;
+
+
+        button.onclick =
+            ()=>inputNumber(n);
+
+
+        keypad.appendChild(
+            button
+        );
+    }
+}
+
+
+/* =============================
+   INPUT NUMBER
+   ============================= */
+
+function inputNumber(number){
+
+    if(
+        !playing ||
+        selected < 0
+    ){
+        return;
+    }
+
+
+    player[selected] =
+        number;
+
+
+    renderBoard();
+}
+
+
+/* =============================
+   DELETE
+   ============================= */
+
+function deleteNumber(){
+
+    if(
+        !playing ||
+        selected < 0
+    ){
+        return;
+    }
+
+
+    player[selected] = -1;
+
+    renderBoard();
+}
+
+
+/* =============================
+   READY?
+   ============================= */
+
+function readyToSubmit(){
+
+    const required =
+        width *
+        height -
+        mineCount;
+
+
+    if(mode === 2){
+
+        let filled = 0;
+
+        for(
+            let i = 0;
+            i < player.length;
+            i++
+        ){
+
+            if(player[i] !== -1)
+                filled++;
+        }
+
+        return filled === required;
+    }
+
+
+    for(
+        let i = 0;
+        i < player.length;
+        i++
+    ){
+
+        if(
+            !mines[i] &&
+            player[i] === -1
+        ){
+
+            return false;
+        }
+    }
+
+
+    return true;
+}
+
+
+/* =============================
+   SUBMIT
+   ============================= */
+
+function submitGame(){
+
+    if(!playing)
+        return;
+
+
+    if(!readyToSubmit()){
+
+        message.textContent =
+            "FILL ALL NUMBER CELLS";
+
+        return;
+    }
+
+
+    finishedTime =
+        (
+            performance.now() -
+            gameStartTime
+        ) / 1000;
+
+
+    playing = false;
+    resultMode = true;
+
+    minesVisible = true;
+
+
+    let correct = 0;
+
+
+    for(
+        let i = 0;
+        i < player.length;
+        i++
+    ){
+
+        if(
+            !mines[i] &&
+            player[i] ===
+            answers[i]
+        ){
+
+            correct++;
+        }
+    }
+
+
+    const required =
+        width *
+        height -
+        mineCount;
+
+
+    const sec =
+        Math.floor(
+            finishedTime
+        );
+
+
+    if(correct === required){
+
+        resultInfo.innerHTML =
+            `<span class="goodText">
+                ${correct}/${required}
+                &nbsp;&nbsp;
+                ${sec}S
+             </span>`;
+
+    }else{
+
+        resultInfo.innerHTML =
+            `<span class="badText">
+                ${correct}/${required}
+                &nbsp;&nbsp;
+                ${sec}S
+             </span>`;
+    }
+
+
+    message.textContent = "";
+
+    renderBoard();
+}
+
+
+/* =============================
+   RESET
+   ============================= */
+
+function resetGame(){
+
+    clearInterval(
+        memoryInterval
+    );
+
+    startGame(mode);
+}
+
+
+/* =============================
+   MAIN
+   ============================= */
+
+function goMain(){
+
+    clearInterval(
+        memoryInterval
+    );
+
+    playing = false;
+
+    resultMode = false;
+
+    selected = -1;
+
+    play.classList.add(
+        "hidden"
+    );
+
+    menu.classList.remove(
+        "hidden"
+    );
+}
+
+
+/* =============================
+   KEYBOARD
+   ============================= */
+
+document.addEventListener(
+    "keydown",
+    e=>{
+
+        /*
+          MAIN MENU
+        */
+
+        if(
+            !menu.classList.contains(
+                "hidden"
+            )
+        ){
+
+            if(e.key === "1")
+                startGame(1);
+
+            if(e.key === "2")
+                startGame(2);
+
+            if(e.key === "3")
+                startGame(3);
+
+            return;
+        }
+
+
+        /*
+          GAME CONTROLS
+        */
+
+        if(e.key === "r" ||
+           e.key === "R"){
+
+            resetGame();
+
+            return;
+        }
+
+
+        if(e.key === "m" ||
+           e.key === "M"){
+
+            goMain();
+
+            return;
+        }
+
+
+        if(e.key === "Enter"){
+
+            submitGame();
+
+            return;
+        }
+
+
+        if(
+            e.key ===
+            "Backspace" ||
+            e.key ===
+            "Delete"
+        ){
+
+            deleteNumber();
+
+            return;
+        }
+
+
+        if(
+            e.key >= "0" &&
+            e.key <= "8"
+        ){
+
+            inputNumber(
+                Number(e.key)
+            );
+        }
+    }
+);
+</script>
+
+</body>
+</html>
